@@ -1,6 +1,6 @@
 # ShopCloud — Sistema de Pedidos
 
-Aplicação web escalável baseada em nuvem desenvolvida como Atividade Final do curso ADS/IA (EAD – Unifor).
+Aplicação web escalável baseada em nuvem desenvolvida como Atividade Final do curso ADS (EAD – Unifor).
 
 ## Arquitetura
 
@@ -18,7 +18,7 @@ GitHub Actions → CI (testes + build) → CD (Render webhook + Vercel auto-depl
 
 | Camada    | Tecnologia                           | Hospedagem |
 |-----------|--------------------------------------|------------|
-| Frontend  | Angular 21, SSR, Zoneless, Tailwind CSS v4, SCSS | Vercel |
+| Frontend  | Angular 21, SSR, Zoneless, SCSS | Vercel |
 | Backend   | Node.js 22, Express, Swagger/OpenAPI | Render (Docker) |
 | Banco     | PostgreSQL via Supabase              | Supabase Cloud |
 | Auth      | Supabase Auth (JWT)                  | Supabase Cloud |
@@ -185,8 +185,4 @@ projeto-pedidos/
 
 ---
 
-*Atividade Final — Desenvolvimento de Software em Nuvem — ADS/IA EAD Unifor*
-
-
-
-scQ6buCJ36x5WHdE
+*Atividade Final — Desenvolvimento de Software em Nuvem — ADS EAD Unifor*
