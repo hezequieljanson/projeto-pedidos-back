@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
+// Importação das rotas
 import productsRouter from './routes/products.js';
 import ordersRouter from './routes/orders.js';
 import meRouter from './routes/me.js';
@@ -21,31 +22,38 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
-// Security & logging
-app.use(helmet());
+// --- CONFIGURAÇÕES DE SEGURANÇA ---
+
+// Ajuste no Helmet: contentSecurityPolicy desativado para o Swagger carregar CSS/JS
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
+
 app.use(morgan('combined'));
 
-// CORS
+// CORS: Configurado para aceitar o seu frontend da Vercel ou localhost
+const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:4200';
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:4200',
+  origin: allowedOrigin,
   credentials: true,
 }));
 
-// Rate limiting
+// Rate limiting para a API
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 200,
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 200, 
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: true, message: 'Too many requests, please try again later.' },
 });
 app.use('/api', limiter);
 
-// Body parsing
+// Parsing do corpo das requisições
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Swagger docs
+// --- CONFIGURAÇÃO DO SWAGGER ---
+
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -54,7 +62,13 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'API REST para o Sistema de Pedidos — Atividade Final Unifor',
     },
-    servers: [{ url: process.env.NODE_ENV === 'production' ? process.env.API_URL : `http://localhost:${process.env.PORT || 3000}` }],
+    // Define a URL do servidor automaticamente baseada no ambiente
+    servers: [
+      { 
+        url: process.env.API_URL || `http://localhost:${process.env.PORT || 3000}`,
+        description: process.env.NODE_ENV === 'production' ? 'Servidor de Produção' : 'Servidor Local'
+      }
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -65,28 +79,45 @@ const swaggerOptions = {
       },
     },
   },
+  // Atenção: Garante que o Swagger encontre as rotas dentro da pasta routes
   apis: [join(__dirname, 'routes', '*.js')],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Health check
+// Rota da documentação
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: "Docs - Sistema de Pedidos",
+}));
+
+// --- ROTAS DA APLICAÇÃO ---
+
+// Health check (Para testar se o Render está OK)
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'ok', 
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString() 
+  });
 });
 
-// Routes
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/me', meRouter);
 
-// 404
+// Tratamento de Rota Não Encontrada (404)
 app.use((req, res) => {
   res.status(404).json({ error: true, message: 'Route not found' });
 });
 
-// Error handler
+// Tratamento de Erros Global (Middleware)
 app.use(errorHandler);
+
+// Inicialização do servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`[server] Running on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
+  console.log(`[server] Swagger docs: http://localhost:${PORT}/api/docs`);
+});
 
 export default app;
