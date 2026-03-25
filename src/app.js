@@ -113,11 +113,5 @@ app.use((req, res) => {
 // Tratamento de Erros Global (Middleware)
 app.use(errorHandler);
 
-// Inicialização do servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`[server] Running on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
-  console.log(`[server] Swagger docs: http://localhost:${PORT}/api/docs`);
-});
-
+// Não iniciar o servidor aqui, o startup fica em src/server.js para evitar EADDRINUSE em ambientes como Render.
 export default app;
